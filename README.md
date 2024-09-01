@@ -1,0 +1,1 @@
+Powered by [12dicts](http://wordlist.aspell.net/12dicts/)

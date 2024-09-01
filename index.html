@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #textInput {
+            margin-bottom: 20px;
+            border: none; /* Remove border */
+            background-color: white; /* White background */
+            color: black; /* Black text color */
+            font-size: 24px; /* Large text */
+            font-weight: bold; /* Bold text */
+            text-align: center; /* Center-align text */
+        }
+        .honeycomb {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .row {
+            display: flex;
+            justify-content: center;
+        }
+        .hex {
+            width: 60px;
+            height: 34.64px;
+            background-color: lightgrey; /* Light grey background */
+            margin: 14px 5px; /* Adjusted vertical margin and horizontal margin */
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 18px;
+            cursor: pointer;
+            border: none; /* Remove border */
+            outline: none;
+            font-weight: bold; /* Bold text */
+        }
+        .hex:before,
+        .hex:after {
+            content: "";
+            position: absolute;
+            width: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+        }
+        .hex:before {
+            bottom: 100%;
+            border-bottom: 17.32px solid lightgrey; /* Light grey background */
+        }
+        .hex:after {
+            top: 100%;
+            width: 0;
+            border-top: 17.32px solid lightgrey; /* Light grey background */
+        }
+        .hex.yellow {
+            background-color: #FFD700; /* Darker yellow background for center hexagon */
+        }
+        .hex.yellow:before {
+            border-bottom-color: #FFD700; /* Darker yellow top triangle */
+        }
+        .hex.yellow:after {
+            border-top-color: #FFD700; /* Darker yellow bottom triangle */
+        }
+        .error-message {
+            color: red;
+            height: 20px; /* Fixed height to prevent layout shift */
+            margin-bottom: 10px; /* Space between error message and input */
+            visibility: hidden; /* Hide the error message by default */
+        }
+        .error-message.visible {
+            visibility: visible; /* Show the error message when it has content */
+        }
+        #score {
+            font-size: 24px; /* Large text */
+            font-weight: bold; /* Bold text */
+            margin-bottom: 20px; /* Space between score and text input */
+        }
+        #guessedWords {
+            margin-top: 20px; /* Space between buttons and guessed words */
+            font-size: 18px; /* Font size for guessed words */
+            font-weight: bold; /* Bold text */
+        }
+        .enter-button {
+            width: 90px; /* Slightly smaller width */
+            height: 35px; /* Slightly smaller height */
+            background-color: #D3D3D3; /* Lighter grey background */
+            color: black; /* Black text color */
+            font-size: 18px; /* Font size */
+            font-weight: bold; /* Bold text */
+            border: none; /* Remove border */
+            border-radius: 10px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            margin-bottom: 20px; /* Add margin for spacing */
+            text-transform: uppercase; /* All caps text */
+        }
+    </style>
+    <script>
+        function addLetter(letter) {
+            document.getElementById('textInput').value += letter;
+        }
+        
+        function calculateScore(length) {
+            return 1 + 2 * (length - 4);
+        }
+
+        function calculateMaxScore(letters) {
+            const centerLetter = letters[3]; // Get the center letter
+            let maxScore = 0;
+
+            words.forEach(word => {
+                const isValid = [...word.toUpperCase()].every(char => letters.includes(char));
+                if (word.length >= 4 && isValid && word.toUpperCase().includes(centerLetter)) {
+                    maxScore += calculateScore(word.length);
+                }
+            });
+
+            return maxScore;
+        }
+
+        function isValidLetterArray(letters) {
+            const maxScore = calculateMaxScore(letters);
+            const hasDuplicates = new Set(letters).size !== letters.length;
+            return maxScore >= 60 && !hasDuplicates;
+        }
+
+        function getRandomLetter() {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return alphabet[Math.floor(Math.random() * alphabet.length)];
+        }
+
+        function getLetters() {
+            let letters;
+            do {
+                letters = Array.from({ length: 7 }, getRandomLetter);
+            } while (!isValidLetterArray(letters));
+            return letters;
+        }
+
+        function createButton(letter, index) {
+            const button = document.createElement('button');
+            button.className = 'hex';
+            if (index === 3) {
+                button.classList.add('yellow');
+            }
+            button.textContent = letter;
+            button.setAttribute('onclick', `addLetter('${letter}')`);
+            return button;
+        }
+
+        function createButtons() {
+            letters = getLetters();
+            const honeycomb = document.querySelector('.honeycomb');
+            honeycomb.innerHTML = ''; // Clear existing buttons
+
+            function createRow(letters, startIndex) {
+                const row = document.createElement('div');
+                row.className = 'row';
+                letters.forEach((letter, index) => {
+                    const button = createButton(letter, startIndex + index);
+                    row.appendChild(button);
+                });
+                return row;
+            }
+
+            const firstRow = createRow(letters.slice(0, 2), 0);
+            honeycomb.appendChild(firstRow);
+
+            const secondRow = createRow(letters.slice(2, 5), 2);
+            honeycomb.appendChild(secondRow);
+
+            const thirdRow = createRow(letters.slice(5, 7), 5);
+            honeycomb.appendChild(thirdRow);
+        }
+
+        function createEnterButton() {
+            const enterButton = document.createElement('button');
+            enterButton.textContent = 'Enter';
+            enterButton.className = 'enter-button'; // Use the new class for styling
+            enterButton.onclick = function() {
+                const event = new KeyboardEvent('keydown', { key: 'Enter' });
+                document.dispatchEvent(event);
+            };
+            return enterButton;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createButtons();
+
+            const textInput = document.getElementById('textInput');
+            const errorMessage = document.createElement('div');
+            errorMessage.className = 'error-message';
+            document.body.insertBefore(errorMessage, textInput);
+
+            const scoreElement = document.getElementById('score'); // Get score element
+            let score = 0; // Initialize score
+            const guessedWords = []; // Initialize guessed words array
+            const guessedWordsElement = document.getElementById('guessedWords'); // Get guessed words element
+
+            // Add event listener to convert input to uppercase
+            textInput.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+
+            // Add event listener to focus on text input when typing anywhere on the page
+            document.addEventListener('keydown', function(event) {
+                textInput.focus();
+
+                if (event.key === 'Enter') {
+                    const inputValue = textInput.value;
+                    const isValid = [...inputValue].every(char => letters.includes(char));
+                    function showError(message) {
+                        errorMessage.textContent = message;
+                        errorMessage.classList.add('visible');
+                        setTimeout(() => {
+                            errorMessage.classList.remove('visible');
+                            textInput.value = '';
+                        }, 3000);
+                    }
+                    const inputValueLower = inputValue.toLowerCase();
+                    if (!words.includes(inputValueLower)) {
+                        showError('Word not found in the list.');
+                    } else if (inputValue.length < 4) {                    
+                        showError('Input must be at least 4 letters long.');
+                    } else if (!isValid) {
+                        showError('Invalid input. Please use only the allowed letters.');
+                    } else if (!inputValue.includes(letters[3])) {
+                        showError(`Word must contain the center letter: ${letters[3]}`);
+                    } else if (guessedWords.includes(inputValue)) {
+                        showError('Word has already been guessed.');
+                    } else {
+                        score += calculateScore(inputValue.length); // Update score based on input length
+                        scoreElement.textContent = `Score: ${score} / ${maxScore}`; // Update score display
+                        guessedWords.push(inputValue); // Add guessed word to the list
+                        guessedWordsElement.textContent = `Guessed Words: ${guessedWords.join(', ')}`; // Update guessed words display
+                        textInput.value = ''; // Clear input field
+                    }
+                }
+            });
+
+            const maxScore = calculateMaxScore(letters);
+            scoreElement.textContent = `Score: 0 / ${maxScore}`; // Display initial score with max score
+            console.log(`Maximum possible score: ${maxScore}`);
+
+            // Create and insert the Enter button
+            const enterButton = createEnterButton();
+            const honeycomb = document.querySelector('.honeycomb');
+            honeycomb.parentNode.insertBefore(enterButton, honeycomb);
+        });
+    </script>
+</head>
+<body>
+    <div id="score">Score: 0</div> <!-- Added score field -->
+    <input type="text" id="textInput">
+    <div class="honeycomb">
+        <!-- Buttons will be dynamically created here -->
+    </div>
+    <div id="guessedWords">Guessed Words: </div> <!-- Added guessed words field -->
+    <script src="3of6game.js"></script>
+</body>
+</html>
