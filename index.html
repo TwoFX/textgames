@@ -93,17 +93,18 @@
             font-weight: bold; /* Bold text */
         }
         .enter-button {
-            width: 90px; /* Slightly smaller width */
+            width: 90px; /* Adjusted width */
             height: 35px; /* Slightly smaller height */
             background-color: #D3D3D3; /* Lighter grey background */
             color: black; /* Black text color */
-            font-size: 18px; /* Font size */
+            font-size: 14px; /* Adjusted font size */
             font-weight: bold; /* Bold text */
             border: none; /* Remove border */
             border-radius: 10px; /* Rounded corners */
             cursor: pointer; /* Pointer cursor on hover */
             margin-bottom: 20px; /* Add margin for spacing */
             text-transform: uppercase; /* All caps text */
+            white-space: nowrap; /* Prevent text overflow */
         }
     </style>
     <script>
@@ -188,11 +189,23 @@
             const enterButton = document.createElement('button');
             enterButton.textContent = 'Enter';
             enterButton.className = 'enter-button'; // Use the new class for styling
-            enterButton.onclick = function() {
-                const event = new KeyboardEvent('keydown', { key: 'Enter' });
-                document.dispatchEvent(event);
+            enterButton.onclick = function(event) {
+                event.stopPropagation(); // Prevent focusing the text field
+                const keyboardEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+                document.dispatchEvent(keyboardEvent);
             };
             return enterButton;
+        }
+
+        function createBackspaceButton() {
+            const backspaceButton = document.createElement('button');
+            backspaceButton.textContent = 'Backspace';
+            backspaceButton.className = 'enter-button'; // Use the same class for styling
+            backspaceButton.onclick = function() {
+                const textInput = document.getElementById('textInput');
+                textInput.value = textInput.value.slice(0, -1); // Remove the last character
+            };
+            return backspaceButton;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -253,10 +266,19 @@
             scoreElement.textContent = `Score: 0 / ${maxScore}`; // Display initial score with max score
             console.log(`Maximum possible score: ${maxScore}`);
 
-            // Create and insert the Enter button
+            // Create a container for the Enter and Backspace buttons
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.gap = '10px'; // Add some space between the buttons
+
+            // Create and insert the Enter and Backspace buttons
             const enterButton = createEnterButton();
+            const backspaceButton = createBackspaceButton();
+            buttonContainer.appendChild(enterButton);
+            buttonContainer.appendChild(backspaceButton);
+
             const honeycomb = document.querySelector('.honeycomb');
-            honeycomb.parentNode.insertBefore(enterButton, honeycomb);
+            honeycomb.parentNode.insertBefore(buttonContainer, honeycomb);
         });
     </script>
 </head>
