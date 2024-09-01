@@ -190,7 +190,7 @@
             enterButton.textContent = 'Enter';
             enterButton.className = 'enter-button'; // Use the new class for styling
             enterButton.onclick = function(event) {
-                event.stopPropagation(); // Prevent focusing the text field
+                event.preventDefault(); // Prevent focusing the text field
                 const keyboardEvent = new KeyboardEvent('keydown', { key: 'Enter' });
                 document.dispatchEvent(keyboardEvent);
             };
@@ -228,8 +228,6 @@
 
             // Add event listener to focus on text input when typing anywhere on the page
             document.addEventListener('keydown', function(event) {
-                textInput.focus();
-
                 if (event.key === 'Enter') {
                     const inputValue = textInput.value;
                     const isValid = [...inputValue].every(char => letters.includes(char));
@@ -259,6 +257,8 @@
                         guessedWordsElement.textContent = `Guessed Words: ${guessedWords.join(', ')}`; // Update guessed words display
                         textInput.value = ''; // Clear input field
                     }
+                } else {
+                    textInput.focus();
                 }
             });
 
