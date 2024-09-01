@@ -107,6 +107,7 @@
             white-space: nowrap; /* Prevent text overflow */
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
     <script>
         function addLetter(letter) {
             document.getElementById('textInput').value += letter;
@@ -136,15 +137,19 @@
             return maxScore >= 60 && !hasDuplicates;
         }
 
-        function getRandomLetter() {
+        function getRandomLetter(rng) {
             const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            return alphabet[Math.floor(Math.random() * alphabet.length)];
+            return alphabet[Math.floor(rng() * alphabet.length)];
         }
 
         function getLetters() {
+            const today = new Date();
+            const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+            const rng = new Math.seedrandom(seed.toString());
+
             let letters;
             do {
-                letters = Array.from({ length: 7 }, getRandomLetter);
+                letters = Array.from({ length: 7 }, () => getRandomLetter(rng));
             } while (!isValidLetterArray(letters));
             return letters;
         }
@@ -235,8 +240,10 @@
                         errorMessage.textContent = message;
                         errorMessage.classList.add('visible');
                         setTimeout(() => {
-                            errorMessage.classList.remove('visible');
                             textInput.value = '';
+                        }, 1000);
+                        setTimeout(() => {
+                            errorMessage.classList.remove('visible');
                         }, 3000);
                     }
                     const inputValueLower = inputValue.toLowerCase();
